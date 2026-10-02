@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cold-Start Cost Predictor (AWS Lambda)</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background:#0f172a; color:#e2e8f0; margin:0; padding:2rem 1rem; }
+    .card { max-width:480px; margin:0 auto; background:#1e293b; padding:2rem; border-radius:12px; }
+    h1 { font-size:1.3rem; margin:0 0 .25rem; }
+    p.sub { color:#94a3b8; font-size:.9rem; margin:0 0 1.5rem; }
+    label { display:block; margin:1rem 0 .3rem; font-size:.9rem; color:#cbd5e1; }
+    input, select { width:100%; padding:.6rem; border-radius:8px; border:1px solid #334155; background:#0f172a; color:#e2e8f0; box-sizing:border-box; }
+    button { margin-top:1.5rem; width:100%; padding:.75rem; border:0; border-radius:8px; background:#38bdf8; color:#0f172a; font-weight:600; font-size:1rem; cursor:pointer; }
+    .result { margin-top:1.5rem; padding:1rem; background:#0f172a; border-radius:8px; border-left:4px solid #38bdf8; }
+    .result b { font-size:1.4rem; color:#38bdf8; }
+    .error { margin-top:1rem; color:#fca5a5; }
+    small { color:#64748b; display:block; margin-top:1.5rem; line-height:1.4; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Cold-Start Cost Predictor</h1>
+    <p class="sub">Predicts the extra dollar cost of one AWS Lambda cold start.</p>
+
+    <form method="post">
+      {% csrf_token %}
+      <label>Memory (MB)</label>
+      <select name="memory_mb">
+        {% for m in memory_options %}
+          <option value="{{ m }}" {% if m == values.memory_mb %}selected{% endif %}>{{ m }}</option>
+        {% endfor %}
+      </select>
+
+      <label>Runtime</label>
+      <select name="runtime">
+        {% for r in runtime_options %}
+          <option value="{{ r }}" {% if r == values.runtime %}selected{% endif %}>{{ r }}</option>
+        {% endfor %}
+      </select>
+
+      <label>Package size (MB)</label>
+      <input type="number" step="0.1" name="package_mb" value="{{ values.package_mb }}" required>
+
+      <label>Idle gap (minutes)</label>
+      <input type="number" step="0.1" name="idle_min" value="{{ values.idle_min }}" required>
+
+      <button type="submit">Predict cost overhead</button>
+    </form>
+
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+    {% if result_usd %}
+      <div class="result">
+        Cold-start overhead per invocation<br>
+        <b>${{ result_usd }}</b><br>
+        <span style="color:#94a3b8;font-size:.85rem;">about ${{ per_million }} per 1 million cold starts</span>
+      </div>
+    {% endif %}
+
+    <small>Model trained on simulated data (assumed cold-start ranges + Lambda pricing formula), not measured AWS data. Estimates are illustrative.</small>
+  </div>
+</body>
+</html>

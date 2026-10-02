@@ -1,0 +1,10 @@
+{
+  "best_model": "Random Forest",
+  "features": [
+    "memory_mb",
+    "package_mb",
+    "idle_min",
+    "runtime"
+  ],
+  "target_units": "micro-USD"
+}
