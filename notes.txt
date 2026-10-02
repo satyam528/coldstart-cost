@@ -1,0 +1,32 @@
+1. Cold start:
+When a Lambda function has been idle, AWS has to start a new container,
+load my code and runtime, and then run it. This extra boot time is a
+cold start. A warm start reuses an already running container, so it is
+faster. Cold starts add extra time, and that time costs extra money.
+
+2. Target:
+overhead = C_actual - C_ideal
+C_actual = cost of an invocation that had a cold start
+C_ideal = cost of the same invocation if it was warm
+I predict the difference, not the total cost, because total cost is
+mostly decided by how long my function's own code runs, and that would
+hide the cold start effect. The difference isolates only the cost
+caused by the cold start.
+
+3. Features (known before the function runs):
+- memory (MB): Lambda price = memory x time. More memory means a higher
+  price per millisecond, but it also gives more CPU, which can make
+  startup faster. So it affects both price and boot time.
+- runtime: Python and Node start fast, Java is slower because the JVM
+  has to start up. So runtime changes the boot time.
+- package size (MB): a bigger package means more code and libraries to
+  download and load, so a longer cold start.
+- idle gap (minutes): AWS keeps a container alive only for a limited
+  time after a call. The longer the function sits idle, the more
+  likely the next call is a cold start.
+
+4. Data:
+Simulated. I generated data in Python using realistic cold-start ranges
+and the AWS Lambda pricing formula, because I don't have an AWS account.
+Limitation: the model can only learn patterns I put in the data.
+Future work: collect real data from AWS.
